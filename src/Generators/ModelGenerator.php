@@ -3,17 +3,17 @@
  * Created by PhpStorm.
  * User: leon
  * Date: 3/6/18
- * Time: 18:13
+ * Time: 18:13.
  */
 
 namespace Kodeloper\Generator\Generators;
-
 
 class ModelGenerator extends BaseGenerator
 {
     const MAX_GUARDED = 2;
     protected $dates;
     protected $relations = [];
+
     /**
      * Get the model stub file path for the generator.
      *
@@ -22,11 +22,11 @@ class ModelGenerator extends BaseGenerator
     protected function getStubFilePath()
     {
         return config('generator.custom_stubs')
-            ? config('generator.custom_stubs.path') . '/Model.stub'
-            : __DIR__ . '/../Stubs/Model.stub';
+            ? config('generator.custom_stubs.path').'/Model.stub'
+            : __DIR__.'/../Stubs/Model.stub';
     }
 
-    public function fromSchema(Array $data)
+    public function fromSchema(array $data)
     {
         $this->stub = file_get_contents($this->getStubFilePath());
         $this->schema = $this->getSchema()[$data['model']];
@@ -60,7 +60,7 @@ class ModelGenerator extends BaseGenerator
             $this->stub = str_replace('{{softDeletes}}', "use SoftDeletes;\n\t", $this->stub);
             $this->dates = [$soft_delete_field => $soft_delete_field];
         } else {
-            $this->stub = str_replace(['{{useSoftDeletes}}','{{softDeletes}}'], '' ,$this->stub);
+            $this->stub = str_replace(['{{useSoftDeletes}}', '{{softDeletes}}'], '', $this->stub);
         }
 
         return $this;
@@ -69,20 +69,23 @@ class ModelGenerator extends BaseGenerator
     private function replaceTableName()
     {
         $this->stub = $stub = str_replace('{{table}}', $this->data['table'], $this->stub);
+
         return $this;
     }
 
     private function replacePrimaryKey()
     {
-        $primaryKey =  $this->schema['primary_key'] ?? $this->config['primary_key'];
-        $this->stub = $stub = str_replace('{{primaryKey}}', $primaryKey , $this->stub);
+        $primaryKey = $this->schema['primary_key'] ?? $this->config['primary_key'];
+        $this->stub = $stub = str_replace('{{primaryKey}}', $primaryKey, $this->stub);
+
         return $this;
     }
 
     private function replaceModelToExtend()
     {
         $classToExtend = $this->schema['extends'] ?? $this->config['extends'];
-        $this->stub = $stub = str_replace('{{modelToExtend}}', $classToExtend , $this->stub);
+        $this->stub = $stub = str_replace('{{modelToExtend}}', $classToExtend, $this->stub);
+
         return $this;
     }
 
@@ -94,7 +97,7 @@ class ModelGenerator extends BaseGenerator
     private function getFillableAttributes()
     {
         return collect($this->schema['attributes'])
-            ->filter(function($value, $key) {
+            ->filter(function ($value, $key) {
                 return $this->AttributeIsFillable($value, $key);
             });
     }
@@ -102,7 +105,7 @@ class ModelGenerator extends BaseGenerator
     private function getDateAttributes()
     {
         return collect($this->schema['attributes'])
-            ->whereIn('type',['date','dateTime','dateTimeTz','time','timeTz','timestamp','timestampTz','year']);
+            ->whereIn('type', ['date', 'dateTime', 'dateTimeTz', 'time', 'timeTz', 'timestamp', 'timestampTz', 'year']);
     }
 
     private function getGuardedAttributes()
@@ -112,7 +115,7 @@ class ModelGenerator extends BaseGenerator
             ->keys());
     }
 
-    private function AttributeIsFillable($attribute , $key)
+    private function AttributeIsFillable($attribute, $key)
     {
         if (isset($attribute['guarded']) && $attribute['guarded'] == true) {
             return false;
@@ -120,6 +123,7 @@ class ModelGenerator extends BaseGenerator
         if (isset($attribute['fillable']) && $attribute['fillable'] == false) {
             return false;
         }
+
         return true;
     }
 
@@ -151,6 +155,7 @@ class ModelGenerator extends BaseGenerator
 EOT;
 
         $this->stub = str_replace('{{guardedFields}}', $fillable, $this->stub);
+
         return $this;
     }
 
@@ -168,6 +173,7 @@ EOT;
 EOT;
 
         $this->stub = str_replace('{{guardedFields}}', $fillable, $this->stub);
+
         return $this;
     }
 
@@ -188,26 +194,29 @@ EOT;
         } else {
             $this->stub = str_replace('{{datesFields}}', $dates, $this->stub);
         }
+
         return $this;
     }
 
     private function replaceRelationShips()
     {
         collect($this->schema['relations'])->each(function ($relation, $key) {
-            $relationMethodName = 'createRelation' . ucfirst(camel_case($relation['type']));
-            if (method_exists($this,  $relationMethodName)) {
+            $relationMethodName = 'createRelation'.ucfirst(camel_case($relation['type']));
+            if (method_exists($this, $relationMethodName)) {
                 $relationName = strtolower($key);
-                $class = $this->config['namespace'] . '\\' . $relation['class'];
-                $this->relations[] = $this->$relationMethodName($relationName ,$class);
+                $class = $this->config['namespace'].'\\'.$relation['class'];
+                $this->relations[] = $this->$relationMethodName($relationName, $class);
             }
         });
         $this->stub = str_replace('{{relationships}}', implode("\n", $this->relations), $this->stub);
+
         return $this;
     }
 
-    private function createRelationBelongsTo($relationName ,$class)
+    private function createRelationBelongsTo($relationName, $class)
     {
         $currentClass = strtolower($this->data['class_name']);
+
         return $relation = <<<EOT
 
     /**
@@ -218,13 +227,10 @@ EOT;
         return \$this->hasMany($class);
     }
 EOT;
-
     }
 
     private function createRelationHasMany($relation)
     {
-        dump("hasMany");
+        dump('hasMany');
     }
-
-
 }
